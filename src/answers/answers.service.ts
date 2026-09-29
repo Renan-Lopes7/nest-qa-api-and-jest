@@ -71,7 +71,7 @@ export class AnswersService {
     });
 
     return {
-      mesage: 'Removed with success',
+      message: 'Removed with success',
     };
   }
 }
