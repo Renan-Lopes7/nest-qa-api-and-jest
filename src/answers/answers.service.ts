@@ -97,8 +97,6 @@ export class AnswersService {
       data: updateAnswerDto,
     });
 
-    await this.invalidateQuestionsCache();
-
     return {
       message: 'Updated answer',
       updateAnswer,

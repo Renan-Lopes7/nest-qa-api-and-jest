@@ -10,10 +10,21 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../database/prisma.service';
 import bcrypt from 'bcrypt';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
+
+  private async invalidateUsersCache() {
+    const keys = await this.redisService.keys('users:page:*');
+    if (keys.length > 0) {
+      await this.redisService.del(...keys);
+    }
+  }
 
   async signup(createUserDto: CreateUserDto) {
     const hashPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -29,6 +40,8 @@ export class UserService {
       },
     });
 
+    await this.invalidateUsersCache();
+
     return {
       message: 'User created with success',
       user,
@@ -36,6 +49,13 @@ export class UserService {
   }
 
   async findAllUsers({ page = 1, limit = 10 }: PaginationDto) {
+    const cacheKey = `users:page:${page}:limit:${limit}`;
+
+    const cache = await this.redisService.get(cacheKey);
+    if (cache) {
+      return JSON.parse(cache);
+    }
+
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
@@ -46,7 +66,7 @@ export class UserService {
       }),
       await this.prismaService.user.count(),
     ]);
-    return {
+    const result = {
       data,
       meta: {
         total,
@@ -55,11 +75,14 @@ export class UserService {
         totalPages: Math.ceil(total / limit),
       },
     };
+    await this.redisService.set(cacheKey, JSON.stringify(result), 'EX', 60);
+
+    return result;
   }
 
   async getUser(id: number) {
     const user = await this.prismaService.user.findFirst({
-      where: { id: +id },
+      where: { id: id },
       select: {
         id: true,
         name: true,
@@ -105,7 +128,7 @@ export class UserService {
     }
 
     const updateUser = await this.prismaService.user.update({
-      where: { id: +id },
+      where: { id: id },
       data: {
         name,
         email,
@@ -113,6 +136,8 @@ export class UserService {
       },
       omit: { password: true },
     });
+
+    await this.invalidateUsersCache();
 
     return {
       message: 'User update successfully.',
@@ -133,6 +158,8 @@ export class UserService {
       throw new ForbiddenException(
         'You can´t delete an account that isn´t yours ',
       );
+
+    await this.invalidateUsersCache();
 
     await this.prismaService.user.delete({
       where: { id: user.id },

@@ -99,8 +99,6 @@ export class QuestionsService {
       data: updateQuestionDto,
     });
 
-    await this.invalidateQuestionsCache();
-
     return {
       message: 'Updated question',
     };
