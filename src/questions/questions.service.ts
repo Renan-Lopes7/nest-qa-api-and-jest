@@ -6,6 +6,7 @@ import {
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PrismaService } from '../database/prisma.service';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class QuestionsService {
@@ -17,12 +18,27 @@ export class QuestionsService {
     });
   }
 
-  findAll() {
-    return this.prismaService.questions.findMany({
-      include: {
-        answers: true,
+  async findAll({ page = 1, limit = 10 }: PaginationDto) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      await this.prismaService.user.findMany({
+        skip,
+        take: limit,
+        include: { answers: true },
+        omit: { password: true },
+      }),
+      await this.prismaService.user.count(),
+    ]);
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-    });
+    };
   }
 
   findOne(id: number) {
