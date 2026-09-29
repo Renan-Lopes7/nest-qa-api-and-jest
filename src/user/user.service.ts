@@ -9,6 +9,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../database/prisma.service';
 import bcrypt from 'bcrypt';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class UserService {
@@ -34,12 +35,22 @@ export class UserService {
     };
   }
 
-  async findAllUsers() {
-    const users = await this.prismaService.user.findMany({
-      omit: { password: true },
-    });
+  async findAllUsers({ page = 1, limit = 10 }: PaginationDto) {
+    const skip = (page - 1) * limit;
 
-    return users;
+    const [data, total] = await Promise.all([
+      await this.prismaService.user.findMany({ skip, take: limit }),
+      await this.prismaService.user.count(),
+    ]);
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getUser(id: number) {
