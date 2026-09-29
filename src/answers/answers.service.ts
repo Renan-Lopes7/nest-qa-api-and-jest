@@ -7,11 +7,28 @@ import { CreateAnswerDto } from './dto/create-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { PrismaService } from '../database/prisma.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class AnswersService {
-  constructor(private readonly prismaService: PrismaService) {}
-  create(createAnswerDto: CreateAnswerDto, userId: number, questionId: number) {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
+
+  private async invalidateQuestionsCache() {
+    const keys = await this.redisService.keys('answers:page:*');
+    if (keys.length > 0) {
+      await this.redisService.del(...keys);
+    }
+  }
+  async create(
+    createAnswerDto: CreateAnswerDto,
+    userId: number,
+    questionId: number,
+  ) {
+    await this.invalidateQuestionsCache();
+
     return this.prismaService.answers.create({
       data: {
         body: createAnswerDto.body,
@@ -22,6 +39,13 @@ export class AnswersService {
   }
 
   async findAll({ page = 1, limit = 10 }: PaginationDto) {
+    const cacheKey = `answers:page:${page}:limit:${limit}`;
+
+    const cache = await this.redisService.get(cacheKey);
+    if (cache) {
+      return JSON.parse(cache);
+    }
+
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
@@ -32,7 +56,7 @@ export class AnswersService {
       }),
       await this.prismaService.answers.count(),
     ]);
-    return {
+    const result = {
       data,
       meta: {
         total,
@@ -41,6 +65,9 @@ export class AnswersService {
         totalPages: Math.ceil(total / limit),
       },
     };
+    await this.redisService.set(cacheKey, JSON.stringify(result), 'EX', 60);
+
+    return result;
   }
 
   async findOne(id: number) {
@@ -70,6 +97,8 @@ export class AnswersService {
       data: updateAnswerDto,
     });
 
+    await this.invalidateQuestionsCache();
+
     return {
       message: 'Updated answer',
       updateAnswer,
@@ -88,6 +117,8 @@ export class AnswersService {
     await this.prismaService.answers.delete({
       where: { id },
     });
+
+    await this.invalidateQuestionsCache();
 
     return {
       message: 'Removed with success',
