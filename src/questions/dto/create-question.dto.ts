@@ -8,9 +8,4 @@ export class CreateQuestionDto {
   @IsNotEmpty({ message: 'Body is required' })
   @IsString({ message: 'Body must be string' })
   body: string;
-
-  @IsInt()
-  @IsNotEmpty()
-  @Min(1)
-  userId: number;
 }
