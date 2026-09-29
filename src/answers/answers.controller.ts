@@ -9,12 +9,14 @@ import {
   UseGuards,
   Req,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { AnswersService } from './answers.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { Request } from 'express';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 interface AuthRequest extends Request {
   user: { sub: number };
@@ -40,8 +42,8 @@ export class AnswersController {
 
   @UseGuards(AuthGuard)
   @Get()
-  findAll() {
-    return this.answersService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    return this.answersService.findAll(pagination);
   }
 
   @UseGuards(AuthGuard)
