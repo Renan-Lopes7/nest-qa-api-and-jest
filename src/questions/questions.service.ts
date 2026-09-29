@@ -7,18 +7,38 @@ import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PrismaService } from '../database/prisma.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class QuestionsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
-  create(createQuestionDto: CreateQuestionDto, userId: number) {
+  private async invalidateQuestionsCache() {
+    const keys = await this.redisService.keys('questions:page:*');
+    if (keys.length > 0) {
+      await this.redisService.del(...keys);
+    }
+  }
+
+  async create(createQuestionDto: CreateQuestionDto, userId: number) {
+    await this.invalidateQuestionsCache();
+
     return this.prismaService.questions.create({
       data: { ...createQuestionDto, userId },
     });
   }
 
   async findAll({ page = 1, limit = 10 }: PaginationDto) {
+    const cacheKey = `questions:page:${page}:limit:${limit}`;
+
+    const cached = await this.redisService.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
@@ -29,7 +49,7 @@ export class QuestionsService {
       }),
       await this.prismaService.questions.count(),
     ]);
-    return {
+    const result = {
       data,
       meta: {
         total,
@@ -38,6 +58,10 @@ export class QuestionsService {
         totalPages: Math.ceil(total / limit),
       },
     };
+
+    await this.redisService.set(cacheKey, JSON.stringify(result), 'EX', 60);
+
+    return result;
   }
 
   findOne(id: number) {
@@ -75,6 +99,8 @@ export class QuestionsService {
       data: updateQuestionDto,
     });
 
+    await this.invalidateQuestionsCache();
+
     return {
       message: 'Updated question',
     };
@@ -87,6 +113,8 @@ export class QuestionsService {
 
     if (question.userId !== requestId)
       throw new ForbiddenException('You can only remove your own question');
+
+    await this.invalidateQuestionsCache();
 
     return {
       message: 'Question deleted',
