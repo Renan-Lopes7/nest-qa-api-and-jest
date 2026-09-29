@@ -7,6 +7,7 @@ import { DatabaseModule } from '../database/database.module';
 import { UserModule } from '../user/user.module';
 import { QuestionsModule } from '../questions/questions.module';
 import { AnswersModule } from '../answers/answers.module';
+import { RedisModule } from '../redis/redis.module';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -17,6 +18,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     UserModule,
     QuestionsModule,
     AnswersModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
