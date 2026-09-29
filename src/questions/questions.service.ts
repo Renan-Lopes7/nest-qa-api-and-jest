@@ -55,14 +55,13 @@ export class QuestionsService {
     if (questionExist.userId !== requestId)
       throw new ForbiddenException('You can only edit your own question');
 
-    const updateQuestion = this.prismaService.questions.update({
+    this.prismaService.questions.update({
       where: { id },
       data: updateQuestionDto,
     });
 
     return {
       message: 'Updated question',
-      updateQuestion,
     };
   }
 

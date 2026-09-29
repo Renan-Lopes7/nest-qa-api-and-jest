@@ -24,7 +24,6 @@ model User {
   questions Questions[]
   answers   Answers[]
 }
-
 model Questions {
   id        Int   @id @default(autoincrement())
   title     String
