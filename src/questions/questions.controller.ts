@@ -50,13 +50,14 @@ export class QuestionsController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateQuestionDto: UpdateQuestionDto,
+    @Req() req: AuthRequest,
   ) {
-    return this.questionsService.update(id, updateQuestionDto);
+    return this.questionsService.update(id, updateQuestionDto, req.user.sub);
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.questionsService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: AuthRequest) {
+    return this.questionsService.remove(id, req.user.sub);
   }
 }

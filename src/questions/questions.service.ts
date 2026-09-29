@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PrismaService } from '../database/prisma.service';
@@ -36,13 +40,20 @@ export class QuestionsService {
     });
   }
 
-  update(id: number, updateQuestionDto: UpdateQuestionDto) {
-    const questionExist = this.prismaService.questions.findFirst({
+  async update(
+    id: number,
+    updateQuestionDto: UpdateQuestionDto,
+    requestId: number,
+  ) {
+    const questionExist = await this.prismaService.questions.findFirst({
       where: { id },
     });
 
     if (!questionExist)
       throw new BadRequestException('This question not exist');
+
+    if (questionExist.userId !== requestId)
+      throw new ForbiddenException('You can only edit your own question');
 
     const updateQuestion = this.prismaService.questions.update({
       where: { id },
@@ -55,10 +66,13 @@ export class QuestionsService {
     };
   }
 
-  remove(id: number) {
-    this.prismaService.questions.delete({
+  async remove(id: number, requestId: number) {
+    const question = await this.prismaService.questions.delete({
       where: { id },
     });
+
+    if (question.userId !== requestId)
+      throw new ForbiddenException('You can only remove your own question');
 
     return {
       message: 'Question deleted',

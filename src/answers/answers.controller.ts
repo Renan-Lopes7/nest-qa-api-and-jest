@@ -55,13 +55,14 @@ export class AnswersController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateAnswerDto: UpdateAnswerDto,
+    @Req() req: AuthRequest,
   ) {
-    return this.answersService.update(id, updateAnswerDto);
+    return this.answersService.update(id, updateAnswerDto, req.user.sub);
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.answersService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: AuthRequest) {
+    return this.answersService.remove(id, req.user.sub);
   }
 }
