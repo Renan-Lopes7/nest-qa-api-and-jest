@@ -22,13 +22,12 @@ export class QuestionsService {
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-      await this.prismaService.user.findMany({
+      await this.prismaService.questions.findMany({
         skip,
         take: limit,
         include: { answers: true },
-        omit: { password: true },
       }),
-      await this.prismaService.user.count(),
+      await this.prismaService.questions.count(),
     ]);
     return {
       data,
