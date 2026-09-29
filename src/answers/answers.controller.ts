@@ -29,12 +29,12 @@ export class AnswersController {
   create(
     @Body() createAnswerDto: CreateAnswerDto,
     @Req() req: AuthRequest,
-    @Param('questionId') questionId: string,
+    @Param('questionId', ParseIntPipe) questionId: number,
   ) {
     return this.answersService.create(
       createAnswerDto,
       req.user.sub,
-      +questionId,
+      questionId,
     );
   }
 
