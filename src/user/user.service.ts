@@ -119,14 +119,13 @@ export class UserService {
         'You can´t delete an account that isn´t yours ',
       );
 
-    const deleteUser = await this.prismaService.user.delete({
+    await this.prismaService.user.delete({
       where: { id: user.id },
       select: { id: true, name: true, email: true },
     });
 
     return {
       message: 'User removed successfully',
-      user: deleteUser,
     };
   }
 }
