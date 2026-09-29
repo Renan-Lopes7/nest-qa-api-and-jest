@@ -64,7 +64,7 @@ export class AnswersService {
     if (!ifAnswerExist) throw new NotFoundException('Answer not found');
 
     if (ifAnswerExist.userId !== requestId)
-      throw new ForbiddenException('You can only edit your own answer');
+      throw new ForbiddenException('You can only delete your own answer');
 
     await this.prismaService.answers.delete({
       where: { id },
