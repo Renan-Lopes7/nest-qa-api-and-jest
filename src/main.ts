@@ -15,6 +15,12 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Nest API Questions and Answers')
     .setDescription('API de perguntas e respostas')
