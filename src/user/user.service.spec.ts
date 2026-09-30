@@ -7,7 +7,6 @@ import {
 import { UserService } from './user.service';
 import { PrismaService } from '../database/prisma.service';
 import bcrypt from 'bcrypt';
-import { UpdateAuthDto } from '../auth/dto/update-auth.dto';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
