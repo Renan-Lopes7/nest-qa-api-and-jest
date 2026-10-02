@@ -15,7 +15,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async singnin(createAuthDto: CreateAuthDto) {
+  async signin(createAuthDto: CreateAuthDto) {
     const user = await this.prismaService.user.findFirst({
       where: { email: createAuthDto.email },
     });
@@ -27,6 +27,6 @@ export class AuthService {
 
     const payload = { sub: user.id };
 
-    return { acess_token: await this.jwtService.signAsync(payload) };
+    return { access_token: await this.jwtService.signAsync(payload) };
   }
 }
