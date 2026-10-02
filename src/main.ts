@@ -22,8 +22,8 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle('Nest API Questions and Answers')
-    .setDescription('API de perguntas e respostas')
+    .setTitle('DevDúvida API')
+    .setDescription('API de dúvidas técnicas de programação')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

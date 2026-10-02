@@ -27,7 +27,7 @@ model User {
 model Questions {
   id        Int   @id @default(autoincrement())
   title     String
-  body      String
+  body      String @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    Int
@@ -37,7 +37,7 @@ model Questions {
 
 model Answers {
   id        Int   @id @default(autoincrement())
-  body       String
+  body       String @db.Text
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   userId     Int

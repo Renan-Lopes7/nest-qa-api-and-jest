@@ -29,13 +29,15 @@ export class AnswersService {
   ) {
     await this.invalidateQuestionsCache();
 
-    return this.prismaService.answers.create({
+    const answer = await this.prismaService.answers.create({
       data: {
         body: createAnswerDto.body,
         userId,
         questionId,
       },
     });
+
+    return answer;
   }
 
   async findAll({ page = 1, limit = 10 }: PaginationDto) {

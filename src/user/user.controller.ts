@@ -18,6 +18,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import type { AuthRequest } from '../auth/interfaces/auth.request';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('user')
 export class UserController {
@@ -33,12 +34,14 @@ export class UserController {
     return this.userService.findAllUsers(pagination);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Get(':id')
   getUser(@Param('id', ParseIntPipe) id: number) {
     return this.userService.getUser(id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Patch(':id')
   updateUser(
@@ -49,6 +52,7 @@ export class UserController {
     return this.userService.updateUser(updateUserDto, id, req.user.sub);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number, @Req() req: AuthRequest) {
