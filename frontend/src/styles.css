@@ -389,3 +389,8 @@ h1 {
     font-size: 1.6rem;
   }
 }
+
+.author-name {
+  color: var(--accent);
+  font-weight: 600;
+}

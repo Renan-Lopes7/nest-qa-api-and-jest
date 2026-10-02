@@ -47,7 +47,8 @@ export default function QuestionDetail() {
   }
 
   async function handleDeleteQuestion() {
-    if (!confirm('Excluir esta pergunta? Essa ação não pode ser desfeita.')) return;
+    if (!confirm('Excluir esta pergunta? Essa ação não pode ser desfeita.'))
+      return;
     try {
       await api.deleteQuestion(id);
       navigate('/');
@@ -78,7 +79,8 @@ export default function QuestionDetail() {
   }
 
   if (error) return <div className="page page-narrow form-error">{error}</div>;
-  if (!question) return <div className="page page-narrow muted">Carregando…</div>;
+  if (!question)
+    return <div className="page page-narrow muted">Carregando…</div>;
 
   const isOwner = user && user.sub === question.userId;
 
@@ -93,19 +95,32 @@ export default function QuestionDetail() {
                 <button className="btn-ghost" onClick={() => setEditing(true)}>
                   Editar
                 </button>
-                <button className="btn-ghost danger" onClick={handleDeleteQuestion}>
+                <button
+                  className="btn-ghost danger"
+                  onClick={handleDeleteQuestion}
+                >
                   Excluir
                 </button>
               </div>
             )}
           </div>
           <p className="question-body">{question.body}</p>
+          <p className="meta-row" style={{ marginTop: '0.5rem' }}>
+            perguntado por{' '}
+            <span className="author-name">
+              {question.user?.name || 'alguém'}
+            </span>
+          </p>
         </>
       ) : (
         <form className="stacked-form" onSubmit={handleUpdateQuestion}>
           <label>
             Título
-            <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} required />
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              required
+            />
           </label>
           <label>
             Detalhes
@@ -118,7 +133,11 @@ export default function QuestionDetail() {
           </label>
           <div className="form-row">
             <button type="submit">Salvar</button>
-            <button type="button" className="btn-ghost" onClick={() => setEditing(false)}>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => setEditing(false)}
+            >
               Cancelar
             </button>
           </div>
@@ -182,6 +201,10 @@ function AnswerItem({ answer, isOwner, onDeleted, onUpdated }) {
       {!editing ? (
         <>
           <p>{answer.body}</p>
+          <span className="meta-row">
+            respondido por{' '}
+            <span className="author-name">{answer.user?.name}</span>
+          </span>
           {isOwner && (
             <div className="owner-actions small">
               <button className="btn-ghost" onClick={() => setEditing(true)}>
@@ -195,10 +218,19 @@ function AnswerItem({ answer, isOwner, onDeleted, onUpdated }) {
         </>
       ) : (
         <form className="stacked-form" onSubmit={save}>
-          <textarea rows={3} value={body} onChange={(e) => setBody(e.target.value)} required />
+          <textarea
+            rows={3}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            required
+          />
           <div className="form-row">
             <button type="submit">Salvar</button>
-            <button type="button" className="btn-ghost" onClick={() => setEditing(false)}>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => setEditing(false)}
+            >
               Cancelar
             </button>
           </div>

@@ -54,7 +54,12 @@ export default function Questions() {
               <h2>{q.title}</h2>
               <p className="question-excerpt">{q.body}</p>
               <div className="meta-row">
-                <span>#{q.id}</span>
+                <span>
+                  por{' '}
+                  <span className="author-name">
+                    {q.user?.name || 'alguém'}
+                  </span>
+                </span>
                 <span>{timeAgo(q.createdAt)}</span>
                 {q.answers && <span>{q.answers.length} respostas</span>}
               </div>
