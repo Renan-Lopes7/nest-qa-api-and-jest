@@ -17,6 +17,7 @@ import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { Request } from 'express';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 interface AuthRequest extends Request {
   user: { sub: number };
@@ -27,6 +28,7 @@ export class AnswersController {
   constructor(private readonly answersService: AnswersService) {}
 
   @Post(':questionId')
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   create(
     @Body() createAnswerDto: CreateAnswerDto,
@@ -40,18 +42,17 @@ export class AnswersController {
     );
   }
 
-  @UseGuards(AuthGuard)
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.answersService.findAll(pagination);
   }
 
-  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.answersService.findOne(id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Patch(':id')
   update(
@@ -62,6 +63,7 @@ export class AnswersController {
     return this.answersService.update(id, updateAnswerDto, req.user.sub);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number, @Req() req: AuthRequest) {
