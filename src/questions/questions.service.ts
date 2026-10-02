@@ -45,7 +45,10 @@ export class QuestionsService {
       await this.prismaService.questions.findMany({
         skip,
         take: limit,
-        include: { answers: true },
+        include: {
+          user: { select: { name: true } },
+          answers: true,
+        },
       }),
       await this.prismaService.questions.count(),
     ]);
@@ -68,11 +71,14 @@ export class QuestionsService {
     return this.prismaService.questions.findUnique({
       where: { id },
       include: {
-        answers: true,
         user: {
-          select: {
-            name: true,
-            email: true,
+          select: { name: true, email: true },
+        },
+        answers: {
+          include: {
+            user: {
+              select: { name: true, email: true },
+            },
           },
         },
       },
